@@ -55,8 +55,8 @@ class W8A16LinearLayer(nn.Module):
 
 if __name__ == "__main__":
     layer = W8A16LinearLayer(4, 8, bias=True)
-    print("Weights before:\n" , layer.int8_weights)
     weights = torch.randn((8, 4), dtype=torch.float32)
+    print("Weights before:\n" , weights)
     layer.quantize(weights)
     print("Weights After:\n" , layer.int8_weights)
     
