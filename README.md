@@ -1,10 +1,10 @@
 # Quantization Project
 
-A PyTorch implementation of W8A16 (Weight 8-bit, Activation 16-bit) quantization for neural network linear layers.
+A PyTorch implementation of W8A16 (Weight 8-bit, Activation 16-bit) quantization for neural network linear layers with support for automatic model conversion and Hugging Face integration.
 
 ## Overview
 
-This project demonstrates how to implement quantized linear layers that reduce memory usage by storing weights as 8-bit integers while maintaining activations in higher precision. This approach provides 4x memory savings for weights while preserving reasonable numerical accuracy.
+This project demonstrates how to implement quantized linear layers that reduce memory usage by storing weights as 8-bit integers while maintaining activations in higher precision. This approach provides 4x memory savings for weights while preserving reasonable numerical accuracy. The project now includes utilities to automatically replace linear layers in existing models and demonstrates quantization on real Hugging Face models.
 
 ## Features
 
@@ -12,10 +12,14 @@ This project demonstrates how to implement quantized linear layers that reduce m
 - **Per-channel scaling**: Individual scaling factors for each output channel
 - **PyTorch integration**: Compatible with standard PyTorch workflows
 - **Memory efficient**: 4x reduction in weight storage
+- **Automatic layer replacement**: Convert existing models to use quantized layers
+- **Hugging Face compatibility**: Works with transformers models
+- **Selective quantization**: Exclude specific layers (e.g., language model heads)
 
 ## Files
 
-- `quantizer.py`: Main implementation with W8A16LinearLayer class
+- `main.py`: Demo script with dummy and real model examples
+- `quantizer.py`: Main implementation with W8A16LinearLayer class and utilities
 - `quantization_explanation.md`: Detailed technical explanation
 - `requirements.txt`: Python dependencies
 
@@ -47,8 +51,14 @@ output = layer(input_tensor)
 
 ### Running the Demo
 
+**Basic quantized layer demo:**
 ```bash
 python quantizer.py
+```
+
+**Full demo with model replacement and Hugging Face integration:**
+```bash
+python main.py
 ```
 
 ## How It Works
@@ -67,11 +77,25 @@ The quantization process:
 
 See `quantization_explanation.md` for detailed technical explanation.
 
+### Model Replacement Example
+
+```python
+import torch
+from transformers import AutoModelForCausalLM
+from quantizer import W8A16LinearLayer, replace_linear_with_target_and_quantize
+
+# Load a model
+model = AutoModelForCausalLM.from_pretrained("model_name")
+
+# Replace all linear layers except language model head with quantized versions
+replace_linear_with_target_and_quantize(model, W8A16LinearLayer, ["lm_head"])
+```
+
 ## Requirements
 
 - Python 3.7+
-- PyTorch 1.9+
-- NumPy
+- PyTorch 2.8+
+- Transformers 4.56+
 
 ## License
 
