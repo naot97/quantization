@@ -22,6 +22,7 @@ This project demonstrates how to implement quantized linear layers that reduce m
 - `quantizer.py`: Main implementation with W8A16LinearLayer class and utilities
 - `quantization_explanation.md`: Detailed technical explanation
 - `requirements.txt`: Python dependencies
+- `docs/Quantization.pdf`: Comprehensive quantization documentation
 
 ## Installation
 
