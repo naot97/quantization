@@ -53,6 +53,11 @@ Performance Metrics:
 
 ### Static Quantization Results
 ```
+Model Parameters:
+- Original: 11,181,642 parameters
+- Quantized: Not directly comparable (Intel Extension uses different parameter representation)
+- Memory: Significantly reduced due to INT8 quantization of all layers (Conv2d + Linear)
+
 Performance Metrics:
 - Average original inference time per batch: ~6.0ms
 - Average quantized inference time per batch: ~69.0ms
