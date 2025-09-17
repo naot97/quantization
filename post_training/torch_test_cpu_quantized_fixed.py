@@ -25,7 +25,7 @@ testing_dataset = torchvision.datasets.CIFAR10(
 )
 
 testing_dataloader = torch.utils.data.DataLoader(
-    testing_dataset, batch_size=32, shuffle=False, num_workers=1
+    testing_dataset, batch_size=128, shuffle=False, num_workers=1
 )
 
 # Get sample input
@@ -96,7 +96,7 @@ total_quant_time = 0
 sample_count = 0
 with torch.no_grad():
     for batch_idx, (images, labels) in enumerate(testing_dataloader):
-        if sample_count >= 320:  # Test 320 samples (10 batches of 32)
+        if sample_count >= 512:  # Test 512 samples (4 batches of 128)
             break
 
         # Original model inference with timing

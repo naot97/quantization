@@ -6,8 +6,8 @@ This document compares two different quantization approaches for CPU inference u
 
 - **Model**: ResNet18 (modified for CIFAR-10 with 10 output classes)
 - **Dataset**: CIFAR-10 test set
-- **Batch Size**: 32 samples per batch
-- **Test Samples**: 320 samples (10 batches)
+- **Batch Size**: 128 samples per batch
+- **Test Samples**: 512 samples (4 batches)
 - **Hardware**: CPU (Intel Extension for PyTorch installed)
 
 ## Quantization Methods Tested
@@ -52,11 +52,11 @@ Memory Usage:
 - Memory reduction: 0.0% (minimal change)
 
 Performance Metrics:
-- Average original inference time per batch: 18.447ms
-- Average quantized inference time per batch: 16.892ms
-- Speedup: 1.09x (9% faster)
-- Quantization accuracy: Original 10.9% vs Quantized 11.2% (on 320 samples)
-- Mean absolute difference: ~0.006-0.008 between outputs
+- Average original inference time per batch: 43.423ms
+- Average quantized inference time per batch: 33.523ms
+- Speedup: 1.30x (30% faster)
+- Quantization accuracy: Original 6.4% vs Quantized 6.4% (on 512 samples)
+- Mean absolute difference: ~0.007-0.009 between outputs
 ```
 
 ### Static Quantization Results
@@ -74,11 +74,11 @@ Memory Usage:
 - Memory reduction: 0.1% (minimal change)
 
 Performance Metrics:
-- Average original inference time per batch: 16.803ms
-- Average quantized inference time per batch: 62.459ms
-- Speedup: 0.27x (significantly slower)
-- Quantization accuracy: Original 11.9% vs Quantized 12.2% (on 320 samples)
-- Mean absolute difference: ~0.019-0.024 between outputs
+- Average original inference time per batch: 51.581ms
+- Average quantized inference time per batch: 93.101ms
+- Speedup: 0.55x (slower but improved with larger batches)
+- Quantization accuracy: Original 10.0% vs Quantized 10.0% (on 512 samples)
+- Mean absolute difference: ~0.019-0.020 between outputs
 ```
 
 ## Analysis & Conclusions
@@ -88,7 +88,7 @@ Performance Metrics:
 - Easy to implement with standard PyTorch
 - Minimal setup required
 - Low quantization error
-- **9% performance improvement** (1.09x speedup)
+- **30% performance improvement** (1.30x speedup)
 - Slightly better accuracy in some cases
 
 ❌ **Cons**:
@@ -105,7 +105,7 @@ Performance Metrics:
 - **Minimal memory reduction** (0.1% file size reduction)
 
 ❌ **Cons**:
-- Significant performance overhead in current implementation (~3.7x slower)
+- Performance overhead in current implementation (~1.8x slower, improved with larger batches)
 - **No meaningful memory savings** despite full quantization
 - Requires additional dependency (Intel Extension)
 - Complex calibration process
@@ -116,7 +116,7 @@ Performance Metrics:
 ### For Development & Prototyping
 **Use Dynamic Quantization** because:
 - Simple implementation
-- **Actual performance improvement** (1.11x speedup)
+- **Actual performance improvement** (1.30x speedup)
 - Standard PyTorch compatibility
 - Good balance of accuracy vs. complexity
 
@@ -131,7 +131,7 @@ Consider **Static Quantization** with optimizations:
 
 1. **Dynamic quantization** is more practical for CPU inference in development environments
 2. **Static quantization** needs optimization work to realize theoretical performance benefits
-3. **Batch processing** (32 samples) provides stable timing measurements
+3. **Batch processing** (128 samples) provides stable timing measurements and better performance
 4. **Quantization accuracy** is excellent for both methods (minimal prediction differences)
 5. **Intel Extension** successfully solves PyTorch's missing quantized CPU kernel issue
 6. **⚠️ Memory savings are minimal** for both methods (~0.0-0.1% reduction only)
@@ -141,7 +141,12 @@ Both quantization methods show **negligible memory reduction** despite INT8 conv
 - **Dynamic**: Only Linear layers quantized → minimal savings expected ✓
 - **Static**: All layers quantized → expected significant savings ❌
 
-**Possible explanations**:
+### Batch Size Impact on Performance
+Increasing batch size from 32 to 128 samples significantly improves quantization performance:
+- **Dynamic Quantization**: Speedup improved from 1.09x to **1.30x** (19% better)
+- **Static Quantization**: Performance improved from 0.27x to **0.55x** (2x better, though still slower)
+
+**Possible explanations for memory**:
 - Model state still stored in FP32 format for compatibility
 - Quantization overhead (scales, zero points) adds memory
 - PyTorch/Intel Extension keeps FP32 copies for gradient computation
