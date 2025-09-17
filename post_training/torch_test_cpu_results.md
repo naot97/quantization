@@ -44,11 +44,11 @@ Model Parameters:
 - Quantized: 11,176,512 parameters (-0.05% reduction)
 
 Performance Metrics:
-- Average original inference time per batch: ~5.6ms
-- Average quantized inference time per batch: ~6.0ms
-- Speedup: 0.93x (slightly slower)
-- Quantization accuracy: Maintains identical predictions
-- Mean absolute difference: ~0.004-0.008 between outputs
+- Average original inference time per batch: 16.132ms
+- Average quantized inference time per batch: 14.535ms
+- Speedup: 1.11x (11% faster)
+- Quantization accuracy: Original 9.7% vs Quantized 10.6% (on 320 samples)
+- Mean absolute difference: ~0.006-0.008 between outputs
 ```
 
 ### Static Quantization Results
@@ -59,11 +59,11 @@ Model Parameters:
 - Memory: Significantly reduced due to INT8 quantization of all layers (Conv2d + Linear)
 
 Performance Metrics:
-- Average original inference time per batch: ~6.0ms
-- Average quantized inference time per batch: ~69.0ms
-- Speedup: 0.09x (significantly slower)
-- Quantization accuracy: Maintains identical predictions
-- Mean absolute difference: ~0.01-0.03 between outputs
+- Average original inference time per batch: 18.844ms
+- Average quantized inference time per batch: 69.636ms
+- Speedup: 0.27x (significantly slower)
+- Quantization accuracy: Original 6.9% vs Quantized 6.9% (on 320 samples)
+- Mean absolute difference: ~0.017-0.023 between outputs
 ```
 
 ## Analysis & Conclusions
@@ -73,32 +73,34 @@ Performance Metrics:
 - Easy to implement with standard PyTorch
 - Minimal setup required
 - Low quantization error
-- Maintains prediction accuracy
+- **11% performance improvement** (1.11x speedup)
 - Small memory footprint reduction
+- Slightly better accuracy in some cases
 
 ❌ **Cons**:
 - Only quantizes Linear layers (Conv2d layers remain FP32)
-- Slight performance overhead (~7% slower)
-- Runtime quantization adds computation
+- Runtime quantization adds some computation overhead
+- Limited quantization scope
 
 ### Static Quantization (Intel Extension)
 ✅ **Pros**:
 - Quantizes all layer types (Conv2d + Linear)
-- Lower numerical precision error in theory
+- Comprehensive INT8 quantization
+- Maintains identical accuracy
 - Should provide better performance in optimized deployment
 
 ❌ **Cons**:
-- Significant performance overhead in current implementation (~11x slower)
+- Significant performance overhead in current implementation (~3.7x slower)
 - Requires additional dependency (Intel Extension)
 - Complex calibration process
-- Potential debugging/profiling overhead
+- Potential debugging/profiling overhead in development environment
 
 ## Recommendations
 
 ### For Development & Prototyping
 **Use Dynamic Quantization** because:
 - Simple implementation
-- Acceptable performance trade-off
+- **Actual performance improvement** (1.11x speedup)
 - Standard PyTorch compatibility
 - Good balance of accuracy vs. complexity
 
