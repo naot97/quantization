@@ -43,11 +43,19 @@ Model Parameters:
 - Original: 11,181,642 parameters
 - Quantized: 11,176,512 parameters (-0.05% reduction)
 
+Memory Usage:
+- Original model file size: 42.73 MB
+- Quantized model file size: 42.71 MB
+- Size reduction: 0.0% (minimal change)
+- Original model memory usage: 42.69 MB
+- Quantized model memory usage: 42.67 MB
+- Memory reduction: 0.0% (minimal change)
+
 Performance Metrics:
-- Average original inference time per batch: 16.132ms
-- Average quantized inference time per batch: 14.535ms
-- Speedup: 1.11x (11% faster)
-- Quantization accuracy: Original 9.7% vs Quantized 10.6% (on 320 samples)
+- Average original inference time per batch: 18.447ms
+- Average quantized inference time per batch: 16.892ms
+- Speedup: 1.09x (9% faster)
+- Quantization accuracy: Original 10.9% vs Quantized 11.2% (on 320 samples)
 - Mean absolute difference: ~0.006-0.008 between outputs
 ```
 
@@ -55,15 +63,22 @@ Performance Metrics:
 ```
 Model Parameters:
 - Original: 11,181,642 parameters
-- Quantized: Not directly comparable (Intel Extension uses different parameter representation)
-- Memory: Significantly reduced due to INT8 quantization of all layers (Conv2d + Linear)
+- Quantized: 11,176,842 parameters (-0.04% reduction)
+
+Memory Usage:
+- Original model file size: 42.73 MB
+- Quantized model file size: 42.67 MB
+- Size reduction: 0.1% (minimal change)
+- Original model memory usage: 42.69 MB
+- Quantized model memory usage: 42.64 MB
+- Memory reduction: 0.1% (minimal change)
 
 Performance Metrics:
-- Average original inference time per batch: 18.844ms
-- Average quantized inference time per batch: 69.636ms
+- Average original inference time per batch: 16.803ms
+- Average quantized inference time per batch: 62.459ms
 - Speedup: 0.27x (significantly slower)
-- Quantization accuracy: Original 6.9% vs Quantized 6.9% (on 320 samples)
-- Mean absolute difference: ~0.017-0.023 between outputs
+- Quantization accuracy: Original 11.9% vs Quantized 12.2% (on 320 samples)
+- Mean absolute difference: ~0.019-0.024 between outputs
 ```
 
 ## Analysis & Conclusions
@@ -73,12 +88,12 @@ Performance Metrics:
 - Easy to implement with standard PyTorch
 - Minimal setup required
 - Low quantization error
-- **11% performance improvement** (1.11x speedup)
-- Small memory footprint reduction
+- **9% performance improvement** (1.09x speedup)
 - Slightly better accuracy in some cases
 
 ❌ **Cons**:
 - Only quantizes Linear layers (Conv2d layers remain FP32)
+- **No meaningful memory reduction** (0.0% file size reduction)
 - Runtime quantization adds some computation overhead
 - Limited quantization scope
 
@@ -86,11 +101,12 @@ Performance Metrics:
 ✅ **Pros**:
 - Quantizes all layer types (Conv2d + Linear)
 - Comprehensive INT8 quantization
-- Maintains identical accuracy
-- Should provide better performance in optimized deployment
+- Maintains similar accuracy
+- **Minimal memory reduction** (0.1% file size reduction)
 
 ❌ **Cons**:
 - Significant performance overhead in current implementation (~3.7x slower)
+- **No meaningful memory savings** despite full quantization
 - Requires additional dependency (Intel Extension)
 - Complex calibration process
 - Potential debugging/profiling overhead in development environment
@@ -118,6 +134,18 @@ Consider **Static Quantization** with optimizations:
 3. **Batch processing** (32 samples) provides stable timing measurements
 4. **Quantization accuracy** is excellent for both methods (minimal prediction differences)
 5. **Intel Extension** successfully solves PyTorch's missing quantized CPU kernel issue
+6. **⚠️ Memory savings are minimal** for both methods (~0.0-0.1% reduction only)
+
+### Surprising Memory Results
+Both quantization methods show **negligible memory reduction** despite INT8 conversion:
+- **Dynamic**: Only Linear layers quantized → minimal savings expected ✓
+- **Static**: All layers quantized → expected significant savings ❌
+
+**Possible explanations**:
+- Model state still stored in FP32 format for compatibility
+- Quantization overhead (scales, zero points) adds memory
+- PyTorch/Intel Extension keeps FP32 copies for gradient computation
+- True memory benefits may only appear in optimized inference-only deployments
 
 ## Usage Instructions
 

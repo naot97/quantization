@@ -4,6 +4,8 @@ import torchvision
 import torchvision.transforms as transforms
 import torchvision.models as models
 import time
+import os
+import pickle
 
 # Load a pre-trained model (using ResNet18 for CIFAR10)
 model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
@@ -46,6 +48,45 @@ with torch.no_grad():
 
 # Convert to quantized model
 quantized_model = ipex.quantization.convert(prepared_model)
+
+def get_model_size(model):
+    """Get model size in MB"""
+    torch.save(model.state_dict(), 'temp_model.pth')
+    size = os.path.getsize('temp_model.pth') / (1024 * 1024)  # Convert to MB
+    os.remove('temp_model.pth')
+    return size
+
+def get_model_memory_usage(model):
+    """Get model memory usage in MB"""
+    param_size = 0
+    buffer_size = 0
+    for param in model.parameters():
+        param_size += param.nelement() * param.element_size()
+    for buffer in model.buffers():
+        buffer_size += buffer.nelement() * buffer.element_size()
+    return (param_size + buffer_size) / (1024 * 1024)  # Convert to MB
+
+print("Model size comparison:")
+try:
+    orig_params = sum(p.numel() for p in model.parameters())
+    quant_params = sum(p.numel() for p in quantized_model.parameters())
+    print(f"Original model: {orig_params:,} parameters")
+    print(f"Quantized model: {quant_params:,} parameters")
+
+    orig_size = get_model_size(model)
+    quant_size = get_model_size(quantized_model)
+    print(f"Original model file size: {orig_size:.2f} MB")
+    print(f"Quantized model file size: {quant_size:.2f} MB")
+    print(f"Size reduction: {((orig_size - quant_size) / orig_size * 100):.1f}%")
+
+    orig_memory = get_model_memory_usage(model)
+    quant_memory = get_model_memory_usage(quantized_model)
+    print(f"Original model memory usage: {orig_memory:.2f} MB")
+    print(f"Quantized model memory usage: {quant_memory:.2f} MB")
+    print(f"Memory reduction: {((orig_memory - quant_memory) / orig_memory * 100):.1f}%")
+except Exception as e:
+    print(f"Note: Memory measurement failed for Intel Extension model: {e}")
+    print("Intel Extension models use optimized internal representation")
 
 print("Testing original vs Intel static quantized model on CPU...")
 acc_orig = 0
