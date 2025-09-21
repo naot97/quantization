@@ -36,7 +36,7 @@ calibrator = torch_tensorrt.ptq.DataLoaderCalibrator(
 
 # Compile model with TensorRT
 trt_mod = torch_tensorrt.compile(
-    model, 
+    model,
     inputs=[torch_tensorrt.Input((1, 3, 32, 32))],
     enabled_precisions={torch.float, torch.half, torch.int8},
     calibrator=calibrator,
@@ -55,23 +55,23 @@ with torch.no_grad():
     for i, (images, labels) in enumerate(testing_dataloader):
         if i >= 10:  # Test only first 10 samples
             break
-        
+
         images = images.cuda()
-        
+
         # Original model inference
         original_output = model(images)
-        
-        # TensorRT model inference  
+
+        # TensorRT model inference
         trt_output = trt_mod(images)
-        
+
         # Compare outputs
         diff = torch.abs(original_output - trt_output).mean()
         print(f"Sample {i+1}: Mean absolute difference = {diff:.6f}")
-        
+
         # Get predictions
         original_pred = torch.argmax(original_output, dim=1)
         trt_pred = torch.argmax(trt_output, dim=1)
-        
+
         print(f"Original prediction: {original_pred.item()}, TensorRT prediction: {trt_pred.item()}, Ground truth: {labels.item()}")
 
 print("Model testing completed!")
